@@ -33,11 +33,19 @@ namespace WorkerService
                 // as appsettings.json configured Information level for the category 'WorkerServiceSampleWithApplicationInsights.Worker'
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
 
+                // If you want to see how DI is not passing a telemetry client with an instrumentation key, you'll
+                // see traces in App Insights showing "n/a" because this is null -- however tracing through ILogger >
+                // Serilog > app insights *does* work
+                _logger.LogInformation(tc.InstrumentationKey);
+
                 using (tc.StartOperation<RequestTelemetry>("workeroperation"))
                 {
                     var res = httpClient.GetAsync("https://bing.com").Result.StatusCode;
-                    _logger.LogInformation("bing http call completed with status:" + res);
+                    _logger.LogInformation("INFO: bing http call completed with status:" + res);
+                    _logger.LogWarning("WARN: bing http call completed with status:" + res);
                 }
+
+                // tc.TrackTrace("test");
 
                 await Task.Delay(1000, stoppingToken);
             }
